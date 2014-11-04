@@ -17,10 +17,9 @@ public class Size {
   
   private static final Logger logger = LoggerFactory.getLogger(Size.class);
   
-  private static final Map<Class<?>, Class<?>> primitiveTypeToClass = new ConcurrentHashMap<>();
-
   private static final Unsafe unsafe = UnsafeHelper.get();
-  private static final FieldVisitor defaultTraverseHook = new FieldPrinter();
+  private static final Map<Class<?>, Class<?>> primitiveTypeToClass = new ConcurrentHashMap<>();
+  private static final Map<Class<?>, Object> standardTypes = new ConcurrentHashMap<>();
   
   static {
     primitiveTypeToClass.put(Boolean.TYPE, Boolean.class);
@@ -31,13 +30,35 @@ public class Size {
     primitiveTypeToClass.put(Long.TYPE, Long.class);
     primitiveTypeToClass.put(Float.TYPE, Float.class);
     primitiveTypeToClass.put(Double.TYPE, Double.class);
+    
+    standardTypes.put(Boolean.class, true);
+    standardTypes.put(Byte.class, true);
+    standardTypes.put(Character.class, true);
+    standardTypes.put(Short.class, true);
+    standardTypes.put(Integer.class, true);
+    standardTypes.put(Long.class, true);
+    standardTypes.put(Float.class, true);
+    standardTypes.put(Double.class, true);
+    standardTypes.put(String.class, true);
+  }
+
+  private final FieldVisitor defaultFieldVisitor = new FieldPrinter();
+  private final boolean traverseStandardTypes;
+  
+  public Size() {
+    this(false);
   }
   
-  public static boolean isPrimitiveType(Class<?> type) {
+  public Size(boolean traverseStandardTypes) {
+    super();
+    this.traverseStandardTypes = traverseStandardTypes;
+  }
+
+  public boolean isPrimitiveType(Class<?> type) {
     return primitiveTypeToClass.containsKey(type);
   }
   
-  public static long sizeOfPrimitive(Class<?> type) {
+  public long sizeOfPrimitive(Class<?> type) {
     if (type == Boolean.TYPE) {
       return 1;
     }
@@ -49,31 +70,24 @@ public class Size {
     return 0;
   }
   
-  public static boolean isStandardType(Class<?> type) {
-    return false;
+  public boolean isStandardType(Class<?> type) {
+    if (!traverseStandardTypes) return false;
+    return standardTypes.containsKey(type);
   }
   
-  public static long sizeOfStandardType(Object o) {
+  public long sizeOfStandardType(Object o) {
     return 0;
   }
   
-  public static boolean isArrayOfPrimitives(Class<?> type) {
+  public boolean isArrayOfPrimitives(Class<?> type) {
     return type.isArray() && primitiveTypeToClass.containsKey(type.getComponentType());
   }
   
-  public static long sizeOfArrayOfPrimitives(Object o) {
-    long size = Address.ADDRESS_SIZE;
-    if (o != null) {
-      size += sizeOfPrimitive(o.getClass().getComponentType()) * (Array.getLength(o));
-    }
-    return size;
-  }
-
-  public static long of(Object masterObject, FieldVisitor fieldVisitor) {
-    return of(masterObject, fieldVisitor, 0);
+  public long sizeOfArrayOfPrimitives(Object o) {
+    return sizeOfPrimitive(o.getClass().getComponentType()) * (Array.getLength(o));
   }
   
-  private static long of(Object masterObject, FieldVisitor fieldVisitor, int level) {
+  private long of(Object masterObject, FieldVisitor fieldVisitor, int level) {
     long offset = 0;
     long size = 0;
     for (Field field : masterObject.getClass().getDeclaredFields()) {
@@ -89,14 +103,14 @@ public class Size {
       try {
         field.setAccessible(true);
         o = field.get(masterObject);
-        if (isPrimitiveType(field.getType())) {
+        if (o == null) {
+          size = Address.ADDRESS_SIZE;
+        }
+        else if (isPrimitiveType(field.getType())) {
           size += sizeOfPrimitive(field.getType());
         }
         else if (isArrayOfPrimitives(field.getType())) {
           size += sizeOfArrayOfPrimitives(o);
-        }
-        else if (o == null) {
-          size = Address.ADDRESS_SIZE;
         }
         else {
           size += of(o, fieldVisitor, level + 1);
@@ -109,8 +123,8 @@ public class Size {
     return size;
   }
 
-  public static long of(Object masterObject) {
-    return of(masterObject, defaultTraverseHook);
+  public long of(Object masterObject) {
+    return of(masterObject, defaultFieldVisitor, 0);
   }
 
 }
