@@ -70,13 +70,16 @@ public class Size {
   }
 
   public static long of(Object masterObject, FieldVisitor fieldVisitor) {
+    return of(masterObject, fieldVisitor, 0);
+  }
+  
+  private static long of(Object masterObject, FieldVisitor fieldVisitor, int level) {
     long offset = 0;
-    long typeSize = 0;
+    long size = 0;
     for (Field field : masterObject.getClass().getDeclaredFields()) {
       try {
         offset = unsafe.objectFieldOffset(field);
-        fieldVisitor.notifyAboutField(offset, field,
-            masterObject);
+        fieldVisitor.notifyAboutField(offset, field, masterObject, level);
       } catch (IllegalArgumentException | IllegalAccessException
           | NullPointerException e) {
       }
@@ -87,20 +90,23 @@ public class Size {
         field.setAccessible(true);
         o = field.get(masterObject);
         if (isPrimitiveType(field.getType())) {
-          typeSize += sizeOfPrimitive(field.getType());
+          size += sizeOfPrimitive(field.getType());
         }
         else if (isArrayOfPrimitives(field.getType())) {
-          typeSize += sizeOfArrayOfPrimitives(o);
+          size += sizeOfArrayOfPrimitives(o);
+        }
+        else if (o == null) {
+          size = Address.ADDRESS_SIZE;
         }
         else {
-          typeSize += of(o, fieldVisitor);
+          size += of(o, fieldVisitor, level + 1);
         }
       } catch (IllegalArgumentException | IllegalAccessException  e) {}
       finally {
         field.setAccessible(accessible);
       }
     }
-    return typeSize;
+    return size;
   }
 
   public static long of(Object masterObject) {
