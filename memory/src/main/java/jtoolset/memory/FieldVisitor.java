@@ -2,9 +2,9 @@ package jtoolset.memory;
 
 import java.lang.reflect.Field;
 
-public interface SizeOfTraverseHook {
+public interface FieldVisitor {
 
-  void notifyAboutObject(long offset, Field field, Object masterObject)
+  void notifyAboutField(long offset, Field field, Object masterObject)
       throws IllegalArgumentException, IllegalAccessException;
 
 }

@@ -6,7 +6,7 @@ import org.junit.Test;
 
 import jtoolset.memory.Size;
 
-public class SizeTest {
+public class SizeOfPrimitiveTypesTest {
 
   @Test
   public void sizeOfByte() {

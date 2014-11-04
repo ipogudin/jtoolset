@@ -20,7 +20,7 @@ public class Size {
   private static final Map<Class<?>, Class<?>> primitiveTypeToClass = new ConcurrentHashMap<>();
 
   private static final Unsafe unsafe = UnsafeHelper.get();
-  private static final SizeOfTraverseHook defaultTraverseHook = new SizeOfPrinter();
+  private static final FieldVisitor defaultTraverseHook = new FieldPrinter();
   
   static {
     primitiveTypeToClass.put(Boolean.TYPE, Boolean.class);
@@ -49,42 +49,55 @@ public class Size {
     return 0;
   }
   
+  public static boolean isStandardType(Class<?> type) {
+    return false;
+  }
+  
+  public static long sizeOfStandardType(Object o) {
+    return 0;
+  }
+  
   public static boolean isArrayOfPrimitives(Class<?> type) {
     return type.isArray() && primitiveTypeToClass.containsKey(type.getComponentType());
   }
   
   public static long sizeOfArrayOfPrimitives(Object o) {
-    return sizeOfPrimitive(o.getClass().getComponentType()) * (Array.getLength(o));
+    long size = Address.ADDRESS_SIZE;
+    if (o != null) {
+      size += sizeOfPrimitive(o.getClass().getComponentType()) * (Array.getLength(o));
+    }
+    return size;
   }
 
-  public static long of(Object masterObject, SizeOfTraverseHook traverseHook) {
+  public static long of(Object masterObject, FieldVisitor fieldVisitor) {
     long offset = 0;
     long typeSize = 0;
     for (Field field : masterObject.getClass().getDeclaredFields()) {
       try {
         offset = unsafe.objectFieldOffset(field);
-        traverseHook.notifyAboutObject(offset, field,
+        fieldVisitor.notifyAboutField(offset, field,
             masterObject);
       } catch (IllegalArgumentException | IllegalAccessException
           | NullPointerException e) {
       }
       
-      
-      if (isPrimitiveType(field.getType())) {
-        typeSize += sizeOfPrimitive(field.getType());
-      }
-      else {
-        Object o = null;
-        boolean accessible = field.isAccessible();
-        try {
-          field.setAccessible(true);
-          o = field.get(masterObject);
-          typeSize += of(o, traverseHook);
-        } catch (IllegalArgumentException | IllegalAccessException  e) {}
-        finally {
-          field.setAccessible(accessible);
+      Object o = null;
+      boolean accessible = field.isAccessible();
+      try {
+        field.setAccessible(true);
+        o = field.get(masterObject);
+        if (isPrimitiveType(field.getType())) {
+          typeSize += sizeOfPrimitive(field.getType());
         }
-        typeSize += of(o, traverseHook);
+        else if (isArrayOfPrimitives(field.getType())) {
+          typeSize += sizeOfArrayOfPrimitives(o);
+        }
+        else {
+          typeSize += of(o, fieldVisitor);
+        }
+      } catch (IllegalArgumentException | IllegalAccessException  e) {}
+      finally {
+        field.setAccessible(accessible);
       }
     }
     return typeSize;
