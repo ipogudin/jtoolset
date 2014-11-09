@@ -18,7 +18,11 @@ public class SizeOfStandardTypesTest {
   
   @Test
   public void sizeOfString() {
-    assertTrue(size.isStandardType(String.class));
+    String s = "12345";
+    assertTrue(size.isStandardType(s.getClass()));
+    //The value has been calculated with according to String structure.
+    //TODO must be validated on many platforms.
+    assertEquals(38, size.sizeOfStandardType(s));
   }
   
 }

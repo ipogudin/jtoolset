@@ -5,6 +5,8 @@ import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.management.RuntimeErrorException;
+
 import jtoolset.commons.UnsafeHelper;
 
 import org.slf4j.Logger;
@@ -19,7 +21,7 @@ public class Size {
   
   private static final Unsafe unsafe = UnsafeHelper.get();
   private static final Map<Class<?>, Class<?>> primitiveTypeToClass = new ConcurrentHashMap<>();
-  private static final Map<Class<?>, Object> standardTypes = new ConcurrentHashMap<>();
+  private static final Map<Class<?>, StandardTypeObjectMeasurer> standardTypes = new ConcurrentHashMap<>();
   
   static {
     primitiveTypeToClass.put(Boolean.TYPE, Boolean.class);
@@ -31,15 +33,74 @@ public class Size {
     primitiveTypeToClass.put(Float.TYPE, Float.class);
     primitiveTypeToClass.put(Double.TYPE, Double.class);
     
-    standardTypes.put(Boolean.class, true);
-    standardTypes.put(Byte.class, true);
-    standardTypes.put(Character.class, true);
-    standardTypes.put(Short.class, true);
-    standardTypes.put(Integer.class, true);
-    standardTypes.put(Long.class, true);
-    standardTypes.put(Float.class, true);
-    standardTypes.put(Double.class, true);
-    standardTypes.put(String.class, true);
+    standardTypes.put(Boolean.class, new StandardTypeObjectMeasurer<Boolean>() {
+      @Override
+      public long sizeOfObject(Boolean object) {
+        // TODO Auto-generated method stub
+        return 0;
+      }
+    });
+    standardTypes.put(Byte.class, new StandardTypeObjectMeasurer<Boolean>() {
+      @Override
+      public long sizeOfObject(Boolean object) {
+        // TODO Auto-generated method stub
+        return 0;
+      }
+    });
+    standardTypes.put(Character.class, new StandardTypeObjectMeasurer<Boolean>() {
+      @Override
+      public long sizeOfObject(Boolean object) {
+        // TODO Auto-generated method stub
+        return 0;
+      }
+    });
+    standardTypes.put(Short.class, new StandardTypeObjectMeasurer<Boolean>() {
+      @Override
+      public long sizeOfObject(Boolean object) {
+        // TODO Auto-generated method stub
+        return 0;
+      }
+    });
+    standardTypes.put(Integer.class, new StandardTypeObjectMeasurer<Boolean>() {
+      @Override
+      public long sizeOfObject(Boolean object) {
+        // TODO Auto-generated method stub
+        return 0;
+      }
+    });
+    standardTypes.put(Long.class, new StandardTypeObjectMeasurer<Boolean>() {
+      @Override
+      public long sizeOfObject(Boolean object) {
+        // TODO Auto-generated method stub
+        return 0;
+      }
+    });
+    standardTypes.put(Float.class, new StandardTypeObjectMeasurer<Boolean>() {
+      @Override
+      public long sizeOfObject(Boolean object) {
+        // TODO Auto-generated method stub
+        return 0;
+      }
+    });
+    standardTypes.put(Double.class, new StandardTypeObjectMeasurer<Boolean>() {
+      @Override
+      public long sizeOfObject(Boolean object) {
+        // TODO Auto-generated method stub
+        return 0;
+      }
+    });
+    standardTypes.put(String.class, new StandardTypeObjectMeasurer<String>() {
+      @Override
+      public long sizeOfObject(String object) {
+        final long OBJECT_OVERHEAD = 28;
+        try {
+          return OBJECT_OVERHEAD + object.length() * primitiveTypeToClass.get(Character.TYPE).getField("SIZE").getInt(null) / 8;
+        } catch (IllegalArgumentException | IllegalAccessException
+            | NoSuchFieldException | SecurityException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    });
   }
 
   private final FieldVisitor defaultFieldVisitor = new FieldPrinter();
@@ -76,7 +137,7 @@ public class Size {
   }
   
   public long sizeOfStandardType(Object o) {
-    return 0;
+    return standardTypes.get(o.getClass()).sizeOfObject(o);
   }
   
   public boolean isArrayOfPrimitives(Class<?> type) {
@@ -104,7 +165,11 @@ public class Size {
         field.setAccessible(true);
         o = field.get(masterObject);
         if (o == null) {
-          size = Address.ADDRESS_SIZE;
+          size += Address.ADDRESS_SIZE;
+        }
+        else if (isStandardType(field.getType())) {
+          size += Address.ADDRESS_SIZE;
+          size += sizeOfStandardType(o);
         }
         else if (isPrimitiveType(field.getType())) {
           size += sizeOfPrimitive(field.getType());
