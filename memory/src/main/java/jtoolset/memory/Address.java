@@ -1,15 +1,23 @@
 package jtoolset.memory;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import jtoolset.commons.UnsafeHelper;
 import sun.misc.Unsafe;
 
 @SuppressWarnings("restriction")
 public class Address {
+  
+  private static final Logger logger = LoggerFactory.getLogger(Address.class);
+
+  private static final Unsafe unsafe = UnsafeHelper.get();
 
   public static final int ADDRESS32BIT = 4;
   public static final int ADDRESS64BIT = 8;
-  public static final int ADDRESS_SIZE = UnsafeHelper.get().addressSize();
-
+  public static final int JVM_ADDRESS_SIZE = calculateAddressSize();
+  public static final int ADDRESS_SIZE = unsafe.addressSize();
+  
   public static long get(Object o) {
     Object[] array = new Object[] { o };
     Unsafe unsafe = UnsafeHelper.get();
@@ -29,5 +37,28 @@ public class Address {
 
     return objectAddress;
   }
+  
+  /**
+   * JVM address size depends on platform (32 or 64), 
+   * JVM option UseCompressedOops and maybe something else.
+   * The best way to calculate real address size is measure field offset.
+   * @return
+   */
+  public static int calculateAddressSize() {
+    int addressSize = 0;
+    try {
+      addressSize = 
+          (int) (unsafe.objectFieldOffset(Sample.class.getDeclaredField("o2")) 
+      - unsafe.objectFieldOffset(Sample.class.getDeclaredField("o1")));
+    } catch (NoSuchFieldException | SecurityException e) {
+      logger.error("Something bad just happened ", e);
+    }
+    assert(addressSize > 0);
+    return addressSize;
+  }
 
+  private static class Sample {
+    private Object o1;
+    private Object o2;
+  }
 }

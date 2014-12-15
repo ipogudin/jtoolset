@@ -4,7 +4,6 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -12,8 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
-import javax.management.RuntimeErrorException;
 
 import jtoolset.commons.UnsafeHelper;
 
@@ -198,22 +195,22 @@ public class Size {
         field.setAccessible(true);
         o = field.get(masterObject);
         if (o == null) {
-          lastFieldSize = Address.ADDRESS_SIZE;
+          lastFieldSize = Address.JVM_ADDRESS_SIZE;
         }
         else if (isStandardType(field.getType())) {
           size += sizeOfStandardType(o);
-          lastFieldSize = Address.ADDRESS_SIZE;
+          lastFieldSize = Address.JVM_ADDRESS_SIZE;
         }
         else if (isPrimitiveType(field.getType())) {
           lastFieldSize = sizeOfPrimitive(field.getType());
         }
         else if (isArrayOfPrimitives(field.getType())) {
           size += sizeOfArrayOfPrimitives(o);
-          lastFieldSize = Address.ADDRESS_SIZE;
+          lastFieldSize = Address.JVM_ADDRESS_SIZE;
         }
         else {
           size += of(o, fieldVisitor, level + 1, visitedObjects);
-          lastFieldSize = Address.ADDRESS_SIZE;
+          lastFieldSize = Address.JVM_ADDRESS_SIZE;
         }
       } catch (IllegalArgumentException | IllegalAccessException  e) {}
       finally {

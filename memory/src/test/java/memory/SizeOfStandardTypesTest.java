@@ -13,7 +13,7 @@ public class SizeOfStandardTypesTest {
   
   @Before
   public void setUp() {
-    size = new Size(true);
+    size = new Size(false);
   }
   
   @Test
