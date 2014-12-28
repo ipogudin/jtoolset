@@ -38,13 +38,21 @@ public class Address {
     return objectAddress;
   }
   
+  public static long alignment(long size) {
+    long sizeWithoutRemainder = (size / Address.ADDRESS_SIZE) * Address.ADDRESS_SIZE;
+    if (size - sizeWithoutRemainder > 0) {
+      return sizeWithoutRemainder + Address.ADDRESS_SIZE;
+    }
+    return size;
+  }
+  
   /**
    * JVM address size depends on platform (32 or 64), 
    * JVM option UseCompressedOops and maybe something else.
    * The best way to calculate real address size is measure field offset.
    * @return
    */
-  public static int calculateAddressSize() {
+  private static int calculateAddressSize() {
     int addressSize = 0;
     try {
       addressSize = 

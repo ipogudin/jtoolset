@@ -1,28 +1,28 @@
 package memory;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import jtoolset.memory.StandardTypeUtils;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import jtoolset.memory.Size;
-
 public class SizeOfStandardTypesTest {
 
-  private Size size;
+  private StandardTypeUtils standardTypeUtils;
   
   @Before
   public void setUp() {
-    size = new Size(false);
+    standardTypeUtils = new StandardTypeUtils();
   }
   
   @Test
   public void sizeOfString() {
     String s = "12345";
-    assertTrue(size.isStandardType(s.getClass()));
+    assertTrue(standardTypeUtils.isSupportedType(s.getClass()));
     //The value has been calculated with according to String structure.
     //TODO must be validated on many platforms.
-    assertEquals(38, size.sizeOfStandardType(s));
+    assertEquals(38, standardTypeUtils.size(s));
   }
   
 }

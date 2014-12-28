@@ -5,50 +5,51 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
+import jtoolset.memory.PrimitiveTypeUtils;
 import jtoolset.memory.Size;
 
-public class SizeOfPrimitiveTypesTest {
+public class PrimitiveTypeUtilsTest {
   
-  private Size size;
+  private PrimitiveTypeUtils primitiveTypeUtils;
   
   @Before
   public void setUp() {
-    size = new Size();
+    primitiveTypeUtils = new PrimitiveTypeUtils();
   }
 
   @Test
   public void sizeOfByte() {
-    assertEquals(1, size.sizeOfPrimitive(byte.class));
+    assertEquals(1, primitiveTypeUtils.size(byte.class));
   }
   
   @Test
   public void sizeOfPritiveByteArray() {
     byte[] b = new byte[10];
-    assertEquals(10, size.sizeOfArrayOfPrimitives(b));
+    assertEquals(10, primitiveTypeUtils.sizeOfArray(b));
   }
   
   @Test
   public void sizeOfPritiveBooleanArray() {
     boolean[] b = new boolean[10];
-    assertEquals(10, size.sizeOfArrayOfPrimitives(b));
+    assertEquals(10, primitiveTypeUtils.sizeOfArray(b));
   }
   
   @Test
   public void sizeOfPrimitiveIntArray() {
     int[] i = new int[10];
-    assertEquals(40, size.sizeOfArrayOfPrimitives(i));
+    assertEquals(40, primitiveTypeUtils.sizeOfArray(i));
   }
   
   @Test
   public void sizeOfPrimitiveLongArray() {
     long[] l = new long[10];
-    assertEquals(80, size.sizeOfArrayOfPrimitives(l));
+    assertEquals(80, primitiveTypeUtils.sizeOfArray(l));
   }
   
   @Test
   public void arrayOfPrimitiveTypesShouldBeRecognized() {
-    assertTrue(size.isArrayOfPrimitives(new int[0].getClass()));
-    assertFalse(size.isArrayOfPrimitives(new Integer[0].getClass()));
+    assertTrue(primitiveTypeUtils.isSupportedArrayType(new int[0].getClass()));
+    assertFalse(primitiveTypeUtils.isSupportedArrayType(new Integer[0].getClass()));
   }
 }
 
