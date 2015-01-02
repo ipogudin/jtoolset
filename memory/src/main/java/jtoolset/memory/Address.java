@@ -13,6 +13,8 @@ public class Address {
 
   private static final Unsafe unsafe = UnsafeHelper.get();
 
+  public static final long OBJECT_HEADER_SIZE = 12;
+  
   public static final int ADDRESS32BIT = 4;
   public static final int ADDRESS64BIT = 8;
   public static final int JVM_ADDRESS_SIZE = calculateAddressSize();

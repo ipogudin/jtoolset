@@ -1,6 +1,6 @@
 package jtoolset.memory;
 
-public interface StandardTypeObjectMeasurer<T> {
+public interface WrapperTypeObjectMeasurer<T> {
 
   long sizeOfObject(T object);
 

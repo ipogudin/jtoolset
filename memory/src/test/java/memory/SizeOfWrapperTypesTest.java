@@ -2,18 +2,19 @@ package memory;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import jtoolset.memory.StandardTypeUtils;
+import jtoolset.memory.PrimitiveTypeUtils;
+import jtoolset.memory.WrapperTypeUtils;
 
 import org.junit.Before;
 import org.junit.Test;
 
-public class SizeOfStandardTypesTest {
+public class SizeOfWrapperTypesTest {
 
-  private StandardTypeUtils standardTypeUtils;
+  private WrapperTypeUtils standardTypeUtils;
   
   @Before
-  public void setUp() {
-    standardTypeUtils = new StandardTypeUtils();
+  public void setUp() throws IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException {
+    standardTypeUtils = WrapperTypeUtils.create(PrimitiveTypeUtils.create());
   }
   
   @Test

@@ -1,5 +1,6 @@
 package jtoolset.memory;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -22,22 +23,25 @@ public class Size {
   private static final Logger logger = LoggerFactory.getLogger(Size.class);
   
   private static final Unsafe unsafe = UnsafeHelper.get();
+  
+  public static Size create(boolean traverseStandardTypes) throws IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException {
+    PrimitiveTypeUtils primitiveTypeUtils = PrimitiveTypeUtils.create();
+    WrapperTypeUtils wrapperTypeUtils = WrapperTypeUtils.create(primitiveTypeUtils);
+    return new Size(traverseStandardTypes, primitiveTypeUtils, wrapperTypeUtils);
+  }
 
-  private final PrimitiveTypeUtils primitiveTypes = new PrimitiveTypeUtils();
-  private final StandardTypeUtils standardTypes = new StandardTypeUtils();
-  private final FieldVisitor defaultFieldVisitor = new FieldPrinter();
+  private final PrimitiveTypeUtils primitiveTypeUtils;
+  private final WrapperTypeUtils wrapperTypeUtils;
+  private final ObjectVisitor defaultFieldVisitor = new Printer();
   private final boolean traverseStandardTypes;
   
-  public Size() {
-    this(false);
-  }
-  
-  public Size(boolean traverseStandardTypes) {
-    super();
+  private Size(boolean traverseStandardTypes, PrimitiveTypeUtils primitiveTypeUtils, WrapperTypeUtils wrapperTypeUtils) {
     this.traverseStandardTypes = traverseStandardTypes;
+    this.primitiveTypeUtils = primitiveTypeUtils;
+    this.wrapperTypeUtils = wrapperTypeUtils;
   }
   
-  private long of(Object masterObject, FieldVisitor fieldVisitor, int level, Set<Object> visitedObjects) {
+  protected long of(Object masterObject, ObjectVisitor fieldVisitor, int level, Set<Object> visitedObjects) throws IllegalArgumentException, IllegalAccessException {
     if (visitedObjects.contains(masterObject)) {
       return 0;
     }
@@ -64,38 +68,48 @@ public class Size {
     long size = 0;
     long lastFieldSize = 0;
     for (Field field : fieldsOrderedByOffset) {
-      try {
-        offset = unsafe.objectFieldOffset(field);
-        fieldVisitor.notifyAboutField(offset, field, masterObject, level);
-      } catch (IllegalArgumentException | IllegalAccessException
-          | NullPointerException e) {
-      }
+      offset = unsafe.objectFieldOffset(field);
       
       Object o = null;
       boolean accessible = field.isAccessible();
       try {
         field.setAccessible(true);
         o = field.get(masterObject);
+        fieldVisitor.visit(new FieldObjectMeta(field), o, level);
         if (o == null) {
           lastFieldSize = Address.JVM_ADDRESS_SIZE;
         }
-        else if (traverseStandardTypes && standardTypes.isSupportedType(field.getType())) {
-          size += standardTypes.size(o);
+        else if (!traverseStandardTypes && wrapperTypeUtils.isSupportedType(field.getType())) {
+          size += wrapperTypeUtils.size(o);
           lastFieldSize = Address.JVM_ADDRESS_SIZE;
         }
-        else if (primitiveTypes.isSupportedType(field.getType())) {
-          lastFieldSize = primitiveTypes.size(field.getType());
+        else if (primitiveTypeUtils.isSupportedType(field.getType())) {
+          lastFieldSize = primitiveTypeUtils.size(field.getType());
           //size of primitive type should not be summed because of its value is stored directly in object's field 
         }
-        else if (primitiveTypes.isSupportedArrayType(field.getType())) {
-          size += primitiveTypes.sizeOfArray(o);
+        else if (primitiveTypeUtils.isSupportedArrayType(field.getType())) {
+          size += primitiveTypeUtils.sizeOfArray(o);
+          lastFieldSize = Address.JVM_ADDRESS_SIZE;
+        }
+        else if (field.getType().isArray()) {
+          int arrayLength = Array.getLength(o);
+          size += Address.ADDRESS_SIZE * arrayLength;
+          for (int i = 0; i < arrayLength; i++) {
+            Object item = Array.get(o, i);
+            Class<?> clazz = field.getType().getComponentType();
+            fieldVisitor.visit(new SimpleObjectMeta(clazz, "array item", i), item, level + 1);
+            if (item != null) {
+              size += of(item, fieldVisitor, level + 2, visitedObjects);
+            }
+          }
+          
           lastFieldSize = Address.JVM_ADDRESS_SIZE;
         }
         else {
           size += of(o, fieldVisitor, level + 1, visitedObjects);
           lastFieldSize = Address.JVM_ADDRESS_SIZE;
         }
-      } catch (IllegalArgumentException | IllegalAccessException  e) {}
+      }
       finally {
         field.setAccessible(accessible);
       }
@@ -103,7 +117,7 @@ public class Size {
     return Address.alignment(offset + lastFieldSize) + size;
   }
   
-  public long of(Object masterObject) {
+  public <T> long of(Object masterObject) throws IllegalArgumentException, IllegalAccessException {
     return of(masterObject, defaultFieldVisitor, 0, new HashSet<Object>());
   }
 

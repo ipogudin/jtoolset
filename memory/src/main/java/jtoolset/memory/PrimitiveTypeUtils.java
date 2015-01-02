@@ -8,14 +8,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class PrimitiveTypeUtils {
-  
+
   private static final Logger logger = LoggerFactory.getLogger(PrimitiveTypeUtils.class);
   
   private static final long BOOLEAN_SIZE = 1;
   
+  public static PrimitiveTypeUtils create() {
+    return new PrimitiveTypeUtils();
+  }
+
   private final Map<Class<?>, Class<?>> primitiveTypeToClass = new ConcurrentHashMap<>();
   
-  public PrimitiveTypeUtils() {
+  private PrimitiveTypeUtils() {
     primitiveTypeToClass.put(Boolean.TYPE, Boolean.class);
     primitiveTypeToClass.put(Byte.TYPE, Byte.class);
     primitiveTypeToClass.put(Character.TYPE, Character.class);
@@ -52,7 +56,6 @@ public class PrimitiveTypeUtils {
   }
   
   public boolean isSupportedArrayType(Class<?> clazz) {
-    return clazz.isArray() && primitiveTypeToClass.containsKey(clazz.getComponentType());
+    return clazz.isArray() && isSupportedType(clazz.getComponentType());
   }
-
 }
