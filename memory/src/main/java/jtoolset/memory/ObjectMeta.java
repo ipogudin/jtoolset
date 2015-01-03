@@ -2,8 +2,10 @@ package jtoolset.memory;
 
 public interface ObjectMeta {
 
-  Class<?> getClazz();
+  Class<?> getType();
   String getName();
   long getOffset();
-  
+  Object getValue() throws IllegalArgumentException, IllegalAccessException;
+  boolean isHidden();
+
 }

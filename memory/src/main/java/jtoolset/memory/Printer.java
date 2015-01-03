@@ -1,8 +1,20 @@
 package jtoolset.memory;
 
+import java.io.PrintStream;
 import java.util.Arrays;
 
 public class Printer implements ObjectVisitor {
+  
+  private final PrintStream out;
+  
+  public Printer(PrintStream out) {
+    super();
+    this.out = out;
+  }
+
+  public Printer() {
+    this(System.out);
+  }
 
   @Override
   public void visit(ObjectMeta objectMeta, Object object, int level)
@@ -15,8 +27,8 @@ public class Printer implements ObjectVisitor {
       valueInfo = "null";
     }
     
-    System.out.println(String.format("%s%d %s (%s) %s", new String(chars), objectMeta.getOffset(), objectMeta.getName(),
-        objectMeta.getClazz().getCanonicalName(), valueInfo));
+    out.println(String.format("%s%d %s (%s) %s", new String(chars), objectMeta.getOffset(), objectMeta.getName(),
+        objectMeta.getType().getCanonicalName(), valueInfo));
   }
 
 }
