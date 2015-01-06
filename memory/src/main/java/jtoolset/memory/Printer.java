@@ -22,12 +22,9 @@ public class Printer implements ObjectVisitor {
     char[] chars = new char[level*2];
     Arrays.fill(chars, ' ');
     
-    String valueInfo = "";
-    if (object == null) {
-      valueInfo = "null";
-    }
+    String valueInfo = String.valueOf(object);
     
-    out.println(String.format("%s%d %s (%s) %s", new String(chars), objectMeta.getOffset(), objectMeta.getName(),
+    out.println(String.format("%s%d %s (%s) = %1.24s", new String(chars), objectMeta.getOffset(), objectMeta.getName(),
         objectMeta.getType().getCanonicalName(), valueInfo));
   }
 
