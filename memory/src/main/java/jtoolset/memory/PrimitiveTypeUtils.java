@@ -52,7 +52,7 @@ public class PrimitiveTypeUtils {
   }
   
   public long sizeOfArray(Object o) {
-    return size(o.getClass().getComponentType()) * (Array.getLength(o));
+    return Address.ARRAY_HEADER_SIZE + size(o.getClass().getComponentType()) * (Array.getLength(o));
   }
   
   public boolean isSupportedArrayType(Class<?> clazz) {

@@ -103,7 +103,7 @@ public class Size {
       }
       else if (currentObjectMeta.getType().isArray()) {
         int arrayLength = Array.getLength(o);
-        size += Address.ADDRESS_SIZE * arrayLength;
+        size += Address.ARRAY_HEADER_SIZE + Address.ADDRESS_SIZE * arrayLength;
         for (int i = 0; i < arrayLength; i++) {
           Object item = Array.get(o, i);
           Class<?> clazz = currentObjectMeta.getType().getComponentType();

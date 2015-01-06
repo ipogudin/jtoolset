@@ -13,7 +13,13 @@ public class Address {
 
   private static final Unsafe unsafe = UnsafeHelper.get();
 
+  //TODO check how it is implemented in hotspot/openjdk
   public static final long OBJECT_HEADER_SIZE = 12;
+  /*
+   * See arrayOop.hpp from hotspot source code
+   */
+  public static final long ARRAY_LENGTH_HEADER= 4;
+  public static final long ARRAY_HEADER_SIZE = OBJECT_HEADER_SIZE + ARRAY_LENGTH_HEADER;
   
   public static final int ADDRESS32BIT = 4;
   public static final int ADDRESS64BIT = 8;

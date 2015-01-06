@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Random;
 
+import jtoolset.memory.Address;
 import jtoolset.memory.PrimitiveTypeUtils;
 
 import org.junit.Before;
@@ -66,49 +67,49 @@ public class PrimitiveTypeUtilsTest {
   @Test
   public void sizeOfPritiveBooleanArray() {
     boolean[] a = new boolean[ARRAY_LENGTH];
-    assertEquals(ARRAY_LENGTH * BOOLEAN_SIZE, primitiveTypeUtils.sizeOfArray(a));
+    assertEquals(Address.ARRAY_HEADER_SIZE + ARRAY_LENGTH * BOOLEAN_SIZE, primitiveTypeUtils.sizeOfArray(a));
   }
   
   @Test
   public void sizeOfPritiveByteArray() {
     byte[] a = new byte[ARRAY_LENGTH];
-    assertEquals(ARRAY_LENGTH * Byte.SIZE / 8, primitiveTypeUtils.sizeOfArray(a));
+    assertEquals(Address.ARRAY_HEADER_SIZE + ARRAY_LENGTH * Byte.SIZE / 8, primitiveTypeUtils.sizeOfArray(a));
   }
   
   @Test
   public void sizeOfPritiveCharArray() {
     char[] a = new char[ARRAY_LENGTH];
-    assertEquals(ARRAY_LENGTH * Character.SIZE / 8, primitiveTypeUtils.sizeOfArray(a));
+    assertEquals(Address.ARRAY_HEADER_SIZE + ARRAY_LENGTH * Character.SIZE / 8, primitiveTypeUtils.sizeOfArray(a));
   }
   
   @Test
   public void sizeOfPritiveShortArray() {
     short[] a = new short[ARRAY_LENGTH];
-    assertEquals(ARRAY_LENGTH * Short.SIZE / 8, primitiveTypeUtils.sizeOfArray(a));
+    assertEquals(Address.ARRAY_HEADER_SIZE + ARRAY_LENGTH * Short.SIZE / 8, primitiveTypeUtils.sizeOfArray(a));
   }
   
   @Test
   public void sizeOfPrimitiveIntArray() {
     int[] a = new int[ARRAY_LENGTH];
-    assertEquals(ARRAY_LENGTH * Integer.SIZE / 8, primitiveTypeUtils.sizeOfArray(a));
+    assertEquals(Address.ARRAY_HEADER_SIZE + ARRAY_LENGTH * Integer.SIZE / 8, primitiveTypeUtils.sizeOfArray(a));
   }
   
   @Test
   public void sizeOfPrimitiveLongArray() {
     long[] a = new long[ARRAY_LENGTH];
-    assertEquals(ARRAY_LENGTH * Long.SIZE / 8, primitiveTypeUtils.sizeOfArray(a));
+    assertEquals(Address.ARRAY_HEADER_SIZE + ARRAY_LENGTH * Long.SIZE / 8, primitiveTypeUtils.sizeOfArray(a));
   }
   
   @Test
   public void sizeOfPrimitiveFloatArray() {
     float[] a = new float[ARRAY_LENGTH];
-    assertEquals(ARRAY_LENGTH * Float.SIZE / 8, primitiveTypeUtils.sizeOfArray(a));
+    assertEquals(Address.ARRAY_HEADER_SIZE + ARRAY_LENGTH * Float.SIZE / 8, primitiveTypeUtils.sizeOfArray(a));
   }
   
   @Test
   public void sizeOfPrimitiveDoubleArray() {
     double[] a = new double[ARRAY_LENGTH];
-    assertEquals(ARRAY_LENGTH * Double.SIZE / 8, primitiveTypeUtils.sizeOfArray(a));
+    assertEquals(Address.ARRAY_HEADER_SIZE + ARRAY_LENGTH * Double.SIZE / 8, primitiveTypeUtils.sizeOfArray(a));
   }
   
   @Test
