@@ -80,6 +80,7 @@ public class Size {
     long size = 0;
     long lastFieldSize = 0;
     for (ObjectMeta currentObjectMeta: objectMetaListOrderedByOffset) {
+      lastFieldSize = 0;
       offset = currentObjectMeta.getOffset();
       
       Object o = currentObjectMeta.getValue();
@@ -87,11 +88,15 @@ public class Size {
         fieldVisitor.visit(currentObjectMeta, o, level);
       }
       if (o == null) {
-        lastFieldSize = Address.JVM_ADDRESS_SIZE;
+        if (!currentObjectMeta.isHidden()) {
+          lastFieldSize = Address.JVM_ADDRESS_SIZE;
+        }
       }
       else if (!traverseStandardTypes && wrapperTypeUtils.isSupportedType(currentObjectMeta.getType())) {
         size += wrapperTypeUtils.size(o);
-        lastFieldSize = Address.JVM_ADDRESS_SIZE;
+        if (!currentObjectMeta.isHidden()) {
+          lastFieldSize = Address.JVM_ADDRESS_SIZE;
+        }
       }
       else if (primitiveTypeUtils.isSupportedType(currentObjectMeta.getType())) {
         lastFieldSize = primitiveTypeUtils.size(currentObjectMeta.getType());
@@ -99,7 +104,9 @@ public class Size {
       }
       else if (primitiveTypeUtils.isSupportedArrayType(currentObjectMeta.getType())) {
         size += primitiveTypeUtils.sizeOfArray(o);
-        lastFieldSize = Address.JVM_ADDRESS_SIZE;
+        if (!currentObjectMeta.isHidden()) {
+          lastFieldSize = Address.JVM_ADDRESS_SIZE;
+        }
       }
       else if (currentObjectMeta.getType().isArray()) {
         int arrayLength = Array.getLength(o);
@@ -113,11 +120,15 @@ public class Size {
           }
         }
         
-        lastFieldSize = Address.JVM_ADDRESS_SIZE;
+        if (!currentObjectMeta.isHidden()) {
+          lastFieldSize = Address.JVM_ADDRESS_SIZE;
+        }
       }
       else {
         size += of(o, fieldVisitor, level + 1, visitedObjects);
-        lastFieldSize = Address.JVM_ADDRESS_SIZE;
+        if (!currentObjectMeta.isHidden()) {
+          lastFieldSize = Address.JVM_ADDRESS_SIZE;
+        }
       }
     }
     return Address.alignment(offset + lastFieldSize) + size;
